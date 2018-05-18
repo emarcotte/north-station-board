@@ -1,0 +1,128 @@
+<meta charset='utf-8' />
+
+<style type='text/css'>
+	body {
+		font-family: monospace;
+		background-color: black;
+		color: yellow;
+	}
+
+	header {
+		display: flex;
+		flex-flow: row;
+		justify-content: space-between;
+	}
+
+	#left-header {
+		text-transform: capitalize;
+	}
+
+	#center-header {
+		text-align: center;
+		text-transform: uppercase;
+		color: gray;
+	}
+
+	#right-header {
+		text-align: right;
+		text-transform: uppercase;
+	}
+
+	table {
+		margin-top: 2em;
+		width: 100%;
+	}
+
+	th {
+		text-transform: uppercase;
+		color: gray;
+	}
+</style>
+
+<header>
+	<div id='left-header'>
+		sunday<br />
+		<span id='date-area'></span>
+	</div>
+	<div id='center-header'>
+		north station train information
+	</div>
+	<div id='right-header'>
+		current time<br />
+		<span id='time-area'></span>
+	</div>
+</header>
+<table>
+	<thead>
+		<tr>
+			<th>time</th>
+			<th>destination</th>
+			<th>train</th>
+			<th>track#</th>
+			<th>status</th>
+		</tr>
+	</thead>
+	<tbody>
+	</tbody>
+</table>
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.4.0/papaparse.min.js'></script>
+<script>
+	// Fire up our rendering once by hand, and then schedule it every 30 seconds
+	update()
+	window.setInterval(update, 30000)
+
+	function update() {
+		// update the header with new date/time info
+		var now = new Date()
+
+		document.querySelector('#time-area').innerHTML = now.toLocaleString("en-US", {
+			hour: "2-digit",
+			minute: "2-digit",
+		})
+
+		document.querySelector('#date-area').innerHTML = now.toLocaleString("en-US", {
+			year: 'numeric',
+			month: 'numeric',
+			day: 'numeric',
+		})
+
+		// Fetch the raw csv through the dumb proxy to work around cors
+		fetch('/data')
+			.then(response => response.text())
+			.then(csvData => {
+				Papa.parse(csvData, {
+					// the csv comes with headers, numbers, and an empty line
+					// at the end
+					header: true,
+					dynamicTyping: true,
+					skipEmptyLines: true,
+
+					// once parsed, replace all of the table with brand new rows
+					complete: results => {
+						document.querySelector('tbody')
+							.innerHTML = results.data
+								.sort((a, b) => a.TimeStamp - b.TimeStamp)
+								.map(record => make_row(record))
+								.join('\n')
+					}
+				})
+			})
+	}
+
+	// turn a csv record into a simple stringy html table row
+	function make_row(record) {
+		var time = new Date(record.ScheduledTime * 1000)
+		return `
+			<tr>
+				<td>${time.toLocaleString("en-US", { hour: "2-digit", minute: "2-digit"})}</td>
+				<td>${record.Destination}</td>
+				<td>${record.Trip}</td>
+				<td>${record.Track || 'TBD'}</td>
+				<td>${record.Status}</td>
+			</tr>
+		`
+	}
+
+</script>
+
