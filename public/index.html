@@ -102,7 +102,7 @@
 					complete: results => {
 						document.querySelector('tbody')
 							.innerHTML = results.data
-								.sort((a, b) => a.TimeStamp - b.TimeStamp)
+								.sort((a, b) => a.ScheduledTime - b.ScheduledTime)
 								.map(record => make_row(record))
 								.join('\n')
 					}
