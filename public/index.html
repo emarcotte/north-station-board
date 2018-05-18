@@ -8,6 +8,7 @@
 	}
 
 	header {
+		font-size: 1.25em;
 		display: flex;
 		flex-flow: row;
 		justify-content: space-between;
@@ -41,7 +42,7 @@
 
 <header>
 	<div id='left-header'>
-		sunday<br />
+		<span id='day-area'>sunday</span><br />
 		<span id='date-area'></span>
 	</div>
 	<div id='center-header'>
@@ -79,6 +80,10 @@
 		document.querySelector('#time-area').innerHTML = now.toLocaleString("en-US", {
 			hour: "2-digit",
 			minute: "2-digit",
+		})
+
+		document.querySelector('#day-area').innerHTML = now.toLocaleString("en-US", {
+			weekday: 'long',
 		})
 
 		document.querySelector('#date-area').innerHTML = now.toLocaleString("en-US", {
